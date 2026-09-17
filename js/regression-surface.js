@@ -864,11 +864,11 @@ class RegressionSurfaceLab {
             this.ctx.setLineDash([3, 3]);
 
             if (this.hoveredPoint === pt) {
-                this.ctx.strokeStyle = 'rgba(6, 182, 212, 0.95)';
+                this.ctx.strokeStyle = 'rgba(39, 106, 115, 0.95)';
                 this.ctx.lineWidth = 1.8;
                 this.ctx.setLineDash([]);
             } else {
-                this.ctx.strokeStyle = 'rgba(59, 130, 246, 0.35)';
+                this.ctx.strokeStyle = 'rgba(24, 59, 78, 0.35)';
                 this.ctx.lineWidth = 1.0;
             }
 
@@ -878,7 +878,7 @@ class RegressionSurfaceLab {
 
             // Intercept anchor on surface
             this.ctx.setLineDash([]);
-            this.ctx.fillStyle = this.hoveredPoint === pt ? '#06b6d4' : '#3b82f6';
+            this.ctx.fillStyle = this.hoveredPoint === pt ? '#276A73' : '#183B4E';
             this.ctx.beginPath();
             this.ctx.arc(projPlane.x, projPlane.y, 1.8 * projPlane.scale, 0, Math.PI * 2);
             this.ctx.fill();
@@ -907,14 +907,14 @@ class RegressionSurfaceLab {
             // 1. Ethereal Glass Glow Halo
             const halo = this.ctx.createRadialGradient(proj.x, proj.y, 0, proj.x, proj.y, radius * 2.4);
             if (this.activeModel === 'tree') {
-                halo.addColorStop(0, 'rgba(16, 185, 129, 0.65)');
-                halo.addColorStop(1, 'rgba(16, 185, 129, 0)');
+                halo.addColorStop(0, 'rgba(111, 143, 130, 0.55)');
+                halo.addColorStop(1, 'rgba(111, 143, 130, 0)');
             } else if (this.activeModel === 'mlp') {
-                halo.addColorStop(0, 'rgba(139, 92, 246, 0.65)');
-                halo.addColorStop(1, 'rgba(139, 92, 246, 0)');
+                halo.addColorStop(0, 'rgba(39, 106, 115, 0.55)');
+                halo.addColorStop(1, 'rgba(39, 106, 115, 0)');
             } else {
-                halo.addColorStop(0, 'rgba(59, 130, 246, 0.65)');
-                halo.addColorStop(1, 'rgba(59, 130, 246, 0)');
+                halo.addColorStop(0, 'rgba(24, 59, 78, 0.55)');
+                halo.addColorStop(1, 'rgba(24, 59, 78, 0)');
             }
 
             this.ctx.fillStyle = halo;
@@ -928,17 +928,17 @@ class RegressionSurfaceLab {
             const sphereGrad = this.ctx.createRadialGradient(offX, offY, radius * 0.1, proj.x, proj.y, radius);
 
             if (this.activeModel === 'tree') {
-                sphereGrad.addColorStop(0, '#6ee7b7');
-                sphereGrad.addColorStop(0.4, '#10b981');
-                sphereGrad.addColorStop(1, '#065f46');
+                sphereGrad.addColorStop(0, '#86a99b');
+                sphereGrad.addColorStop(0.4, '#6f8f82');
+                sphereGrad.addColorStop(1, '#37474f');
             } else if (this.activeModel === 'mlp') {
-                sphereGrad.addColorStop(0, '#c4b5fd');
-                sphereGrad.addColorStop(0.4, '#8b5cf6');
-                sphereGrad.addColorStop(1, '#4c1d95');
+                sphereGrad.addColorStop(0, '#6fa5aa');
+                sphereGrad.addColorStop(0.4, '#276a73');
+                sphereGrad.addColorStop(1, '#18313a');
             } else {
-                sphereGrad.addColorStop(0, '#bae6fd');
-                sphereGrad.addColorStop(0.4, '#0284c7');
-                sphereGrad.addColorStop(1, '#0c4a6e');
+                sphereGrad.addColorStop(0, '#4e8390');
+                sphereGrad.addColorStop(0.4, '#183b4e');
+                sphereGrad.addColorStop(1, '#0e1b22');
             }
 
             this.ctx.fillStyle = sphereGrad;
@@ -972,21 +972,21 @@ class RegressionSurfaceLab {
         this.ctx.lineWidth = 1.2;
 
         // X1 Axis
-        this.ctx.strokeStyle = 'rgba(59, 130, 246, 0.45)';
+        this.ctx.strokeStyle = 'rgba(24, 59, 78, 0.45)';
         this.ctx.beginPath();
         this.ctx.moveTo(origin.x, origin.y);
         this.ctx.lineTo(axX1.x, axX1.y);
         this.ctx.stroke();
 
         // X2 Axis
-        this.ctx.strokeStyle = 'rgba(6, 182, 212, 0.45)';
+        this.ctx.strokeStyle = 'rgba(39, 106, 115, 0.45)';
         this.ctx.beginPath();
         this.ctx.moveTo(origin.x, origin.y);
         this.ctx.lineTo(axX2.x, axX2.y);
         this.ctx.stroke();
 
         // Y Axis
-        this.ctx.strokeStyle = 'rgba(139, 92, 246, 0.45)';
+        this.ctx.strokeStyle = 'rgba(111, 143, 130, 0.45)';
         this.ctx.beginPath();
         this.ctx.moveTo(origin.x, origin.y);
         this.ctx.lineTo(axY.x, axY.y);
@@ -994,13 +994,13 @@ class RegressionSurfaceLab {
 
         // Axis Typography Labels
         this.ctx.font = '600 9px "JetBrains Mono", monospace';
-        this.ctx.fillStyle = '#2563eb';
+        this.ctx.fillStyle = '#183B4E';
         this.ctx.fillText('X₁', axX1.x + 4, axX1.y + 3);
 
-        this.ctx.fillStyle = '#0891b2';
+        this.ctx.fillStyle = '#276A73';
         this.ctx.fillText('X₂', axX2.x + 4, axX2.y + 3);
 
-        this.ctx.fillStyle = '#7c3aed';
+        this.ctx.fillStyle = '#6F8F82';
         this.ctx.fillText('Y', axY.x - 4, axY.y - 6);
 
         this.ctx.restore();
@@ -1021,7 +1021,7 @@ class RegressionSurfaceLab {
         const ringRadius = 13;
         const spinAngle = (this.idleTicker * 0.05);
 
-        this.ctx.strokeStyle = '#06b6d4';
+        this.ctx.strokeStyle = '#276A73';
         this.ctx.lineWidth = 1.4;
 
         for (let a = 0; a < 4; a++) {
@@ -1040,8 +1040,8 @@ class RegressionSurfaceLab {
         if (ttX + ttWidth > this.width - 10) ttX = proj.x - ttWidth - 16;
         if (ttY < 10) ttY = proj.y + 20;
 
-        this.ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-        this.ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        this.ctx.fillStyle = 'rgba(24, 49, 58, 0.92)';
+        this.ctx.strokeStyle = 'rgba(111, 165, 170, 0.35)';
         this.ctx.lineWidth = 1;
 
         this.ctx.beginPath();

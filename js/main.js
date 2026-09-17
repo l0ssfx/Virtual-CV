@@ -10,10 +10,10 @@
 // ============================================
 const CONFIG = {
     colors: {
-        primary: '#3b82f6',
-        accent: '#06b6d4',
-        purple: '#8b5cf6',
-        success: '#10b981'
+        primary: '#183B4E',
+        accent: '#276A73',
+        purple: '#6F8F82',
+        success: '#6F8F82'
     },
     motion: {
         fast: 150,
@@ -103,6 +103,10 @@ class SystemLattice {
              this.targetCamRotX = 0.35 - ((e.clientY - this.height / 2) / (this.height / 2)) * 0.12;
         });
 
+        window.addEventListener('themeChanged', () => {
+             this.createVectorParticles();
+        });
+
         this.animate();
     }
     
@@ -143,14 +147,19 @@ class SystemLattice {
     }
     
     createVectorParticles() {
-        // Vector Field Data Stream Particles
+        // Vector Field Data Stream Particles (Non-Luminous Mathematical Stream)
         const count = Math.min(95, Math.floor(this.width / 14));
         this.particles = [];
 
-        const colors = [
-            'rgba(6, 182, 212, ',   // Ice Cyan (#06b6d4)
-            'rgba(8, 145, 178, ',   // Deep Cyan (#0891b2)
-            'rgba(56, 189, 248, '   // Sky Ice (#38bdf8)
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const colors = isDark ? [
+            'rgba(78, 131, 144, ',   // Petrol (#4E8390)
+            'rgba(134, 169, 155, ',  // Soft Sage (#86A99B)
+            'rgba(24, 59, 78, '      // Navy (#183B4E)
+        ] : [
+            'rgba(24, 59, 78, ',     // Navy (#183B4E)
+            'rgba(39, 106, 115, ',   // Petrol (#276A73)
+            'rgba(111, 143, 130, '   // Muted Sage (#6F8F82)
         ];
 
         for (let i = 0; i < count; i++) {
@@ -250,7 +259,7 @@ class SystemLattice {
                 // Horizontal Contour Line
                 if (c < cols - 1) {
                     const pr = projectedGrid[r][c + 1];
-                    this.ctx.strokeStyle = `rgba(56, 189, 248, ${depthFog})`;
+                    this.ctx.strokeStyle = `rgba(39, 106, 115, ${depthFog * 0.75})`;
                     this.ctx.beginPath();
                     this.ctx.moveTo(p.screenX, p.screenY);
                     this.ctx.lineTo(pr.screenX, pr.screenY);
@@ -260,7 +269,7 @@ class SystemLattice {
                 // Vertical Contour Line
                 if (r < rows - 1) {
                     const pd = projectedGrid[r + 1][c];
-                    this.ctx.strokeStyle = `rgba(8, 145, 178, ${depthFog * 0.85})`;
+                    this.ctx.strokeStyle = `rgba(24, 59, 78, ${depthFog * 0.65})`;
                     this.ctx.beginPath();
                     this.ctx.moveTo(p.screenX, p.screenY);
                     this.ctx.lineTo(pd.screenX, pd.screenY);
@@ -592,6 +601,7 @@ class ThemeManager {
             this.btn.setAttribute('aria-label', `Switch to ${nextMode} mode`);
             this.btn.setAttribute('title', `Switch to ${nextMode} mode`);
         }
+        window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
     }
 
     toggle() {
