@@ -1026,7 +1026,7 @@ body:hover .cursor-glow {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    max-width: 620px;
+    max-width: 680px;
 }
 
 .hero-visual {
@@ -1417,7 +1417,7 @@ body:hover .cursor-glow {
     color: #6FA5AA;
 }
 
-/* Hero Title - Refined Executive Scale */
+/* Hero Title - Refined Executive Scale with Silver / Titanium Metallics */
 .hero-title {
     font-size: clamp(2.6rem, 5vw, 4rem);
     font-weight: 700;
@@ -1434,23 +1434,44 @@ body:hover .cursor-glow {
     animation: revealUp 0.85s var(--ease-out-expo) forwards;
 }
 
-.hero-title .title-line:nth-child(1) { animation-delay: 0.08s; }
-.hero-title .title-line:nth-child(2) { animation-delay: 0.18s; }
-.hero-title .title-line:nth-child(3) { animation-delay: 0.28s; }
+.hero-title .title-line:nth-child(1) { 
+    animation-delay: 0.08s; 
+    color: var(--c-text);
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8), 0 2px 8px rgba(140, 155, 161, 0.18);
+}
 
-/* Subtle editorial typographic gradient */
+.hero-title .title-line:nth-child(3) { 
+    animation-delay: 0.28s; 
+    color: var(--c-primary);
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8), 0 2px 8px rgba(140, 155, 161, 0.15);
+}
+
+/* Metallic Duotone: Deep Navy / Petrol fused with Pure Silver & Brushed Chrome */
 .hero-title .gradient-text {
-    background: linear-gradient(135deg, #263238 20%, #183B4E 55%, #276A73 100%);
+    animation-delay: 0.18s;
+    background: linear-gradient(135deg, #183B4E 0%, #37474F 25%, #8C9BA1 45%, #C2CCD0 55%, #276A73 85%, #183B4E 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 6px rgba(140, 155, 161, 0.35));
+}
+
+[data-theme="dark"] .hero-title .title-line:nth-child(1) {
+    color: #F1F3F1;
+    text-shadow: 0 0 16px rgba(194, 204, 208, 0.15);
+}
+
+[data-theme="dark"] .hero-title .title-line:nth-child(3) {
+    color: #CFD8DC;
+    text-shadow: 0 0 16px rgba(111, 165, 170, 0.15);
 }
 
 [data-theme="dark"] .hero-title .gradient-text {
-    background: linear-gradient(135deg, #F1F3F1 20%, #A9C1C4 55%, #6FA5AA 100%);
+    background: linear-gradient(135deg, #FFFFFF 0%, #CFD8DC 30%, #8FA6AC 55%, #6FA5AA 85%, #B4C7C9 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 14px rgba(207, 216, 220, 0.28));
 }
 
 @keyframes revealUp {
@@ -1501,13 +1522,14 @@ body:hover .cursor-glow {
     color: #f8fafc;
 }
 
-/* Hero Actions - Unified Futuristic Action Triad */
+/* Hero Actions - Unified Action Triad on a Single Continuous Row */
 .hero-actions {
     display: flex;
     align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
+    gap: 10px;
+    flex-wrap: nowrap;
     margin-top: 1.25rem;
+    width: 100%;
 }
 
 /* Base Button Specification (Global fallback for drawer) */
@@ -1518,9 +1540,9 @@ body:hover .cursor-glow {
     justify-content: center;
     gap: 8px;
     height: 48px;
-    padding: 0 24px;
+    padding: 0 20px;
     font-family: var(--font-primary);
-    font-size: 0.92rem;
+    font-size: 0.90rem;
     font-weight: 600;
     letter-spacing: -0.01em;
     text-decoration: none;
@@ -1560,11 +1582,11 @@ body:hover .cursor-glow {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    height: 52px;
-    padding: 0 22px;
+    gap: 8px;
+    height: 48px;
+    padding: 0 16px;
     font-family: var(--font-primary);
-    font-size: 0.94rem;
+    font-size: 0.88rem;
     font-weight: 600;
     letter-spacing: -0.015em;
     text-decoration: none;
@@ -1574,6 +1596,7 @@ body:hover .cursor-glow {
     overflow: hidden;
     user-select: none;
     box-sizing: border-box;
+    flex-shrink: 0;
     
     background: rgba(255, 255, 255, 0.88);
     color: var(--c-text) !important;
@@ -2231,6 +2254,11 @@ body:hover .cursor-glow {
 
 @media (max-width: 480px) {
     .hero-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+    .hero-contact-subgroup {
         flex-direction: column;
         width: 100%;
         gap: 10px;
