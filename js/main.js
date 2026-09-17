@@ -32,8 +32,25 @@ class SystemLattice {
         this.camRotY = 0;
         this.targetCamRotX = 0.35;
         this.targetCamRotY = 0;
+        this.isRunning = true;
+        this.animationId = null;
         
         this.init();
+    }
+
+    pause() {
+        this.isRunning = false;
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+    }
+
+    resume() {
+        if (!this.isRunning) {
+            this.isRunning = true;
+            this.animate();
+        }
     }
     
     init() {
@@ -265,7 +282,9 @@ class SystemLattice {
             this.ctx.fill();
         }
 
-        requestAnimationFrame(() => this.animate());
+        if (this.isRunning) {
+            this.animationId = requestAnimationFrame(() => this.animate());
+        }
     }
 }
 
@@ -363,45 +382,123 @@ class ScrollAnimations {
 // ============================================
 
 // ============================================
-// NAVIGATION
+// SCROLL PROGRESS INDICATOR (High-Precision Reading Bar Engine)
 // ============================================
-class Navigation {
+class ScrollProgressIndicator {
     constructor() {
+        this.indicator = document.getElementById('scroll-indicator');
+        if (!this.indicator) return;
+        this.ticking = false;
         this.init();
     }
-    
+
     init() {
-        const navItems = document.querySelectorAll('.nav-item');
-        const sections = document.querySelectorAll('section[id]');
-        
-        // Smooth scroll
-        navItems.forEach(item => {
-            item.addEventListener('click', (e) => {
+        const update = () => {
+            const docEl = document.documentElement;
+            const maxScroll = docEl.scrollHeight - window.innerHeight;
+            if (maxScroll <= 0) {
+                this.indicator.style.width = '0%';
+                return;
+            }
+            const progress = Math.min(100, Math.max(0, (window.scrollY / maxScroll) * 100));
+            this.indicator.style.width = `${progress}%`;
+        };
+
+        window.addEventListener('scroll', () => {
+            if (!this.ticking) {
+                window.requestAnimationFrame(() => {
+                    update();
+                    this.ticking = false;
+                });
+                this.ticking = true;
+            }
+        }, { passive: true });
+
+        update();
+    }
+}
+
+// ============================================
+// UNIFIED SCROLL SPY & NAVIGATION CONTROLLER
+// Synchronizes desktop & mobile navigation with aria-current
+// ============================================
+class ScrollSpyManager {
+    constructor() {
+        this.desktopLinks = document.querySelectorAll('.nav-item');
+        this.mobileLinks = document.querySelectorAll('.drawer-link');
+        this.sections = document.querySelectorAll('section[id]');
+        this.init();
+    }
+
+    init() {
+        // Smooth scroll for desktop navigation links
+        this.desktopLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
                 e.preventDefault();
-                const targetId = item.getAttribute('href');
+                const targetId = link.getAttribute('href');
                 const target = document.querySelector(targetId);
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth' });
                 }
             });
         });
-        
-        // Active state on scroll
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const id = entry.target.id;
-                        navItems.forEach(item => {
-                            item.classList.toggle('active', item.getAttribute('href') === `#${id}`);
-                        });
-                    }
-                });
-            },
-            { threshold: 0.3 }
-        );
-        
-        sections.forEach(section => observer.observe(section));
+
+        if (!this.sections.length) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    this.desktopLinks.forEach(item => {
+                        const isMatch = item.getAttribute('href') === `#${id}`;
+                        item.classList.toggle('active', isMatch);
+                        if (isMatch) {
+                            item.setAttribute('aria-current', 'page');
+                        } else {
+                            item.removeAttribute('aria-current');
+                        }
+                    });
+
+                    this.mobileLinks.forEach(item => {
+                        const isMatch = item.getAttribute('href') === `#${id}`;
+                        item.classList.toggle('active', isMatch);
+                    });
+                }
+            });
+        }, { threshold: 0.25 });
+
+        this.sections.forEach(sec => observer.observe(sec));
+    }
+}
+
+// ============================================
+// HERO LIFECYCLE CONTROLLER (GPU & Battery Optimization)
+// Halts 60fps canvas animation loops when hero is off-screen
+// ============================================
+class HeroLifecycleController {
+    constructor(lattice, regLab) {
+        this.hero = document.getElementById('hero');
+        this.lattice = lattice;
+        this.regLab = regLab;
+        if (!this.hero) return;
+        this.init();
+    }
+
+    init() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const isVisible = entry.isIntersecting;
+                if (isVisible) {
+                    if (this.lattice && typeof this.lattice.resume === 'function') this.lattice.resume();
+                    if (this.regLab && typeof this.regLab.resume === 'function') this.regLab.resume();
+                } else {
+                    if (this.lattice && typeof this.lattice.pause === 'function') this.lattice.pause();
+                    if (this.regLab && typeof this.regLab.pause === 'function') this.regLab.pause();
+                }
+            });
+        }, { threshold: 0.05 });
+
+        observer.observe(this.hero);
     }
 }
 // Skills integrated into Projects & Technical Capabilities
@@ -562,10 +659,34 @@ class MobileNavManager {
         if (this.closeBtn) this.closeBtn.addEventListener('click', () => this.close());
         if (this.backdrop) this.backdrop.addEventListener('click', () => this.close());
         
-        // Handle ESC key
+        // Handle ESC key and Focus Trapping for accessibility
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isOpen) {
+            if (!this.isOpen) return;
+
+            if (e.key === 'Escape') {
                 this.close();
+                return;
+            }
+
+            if (e.key === 'Tab') {
+                const focusables = this.drawer.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                if (!focusables.length) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === first) {
+                        last.focus();
+                        e.preventDefault();
+                    }
+                } else {
+                    if (document.activeElement === last) {
+                        first.focus();
+                        e.preventDefault();
+                    }
+                }
             }
         });
         
@@ -586,21 +707,6 @@ class MobileNavManager {
                 }
             });
         });
-        
-        // Active link tracking on scroll
-        const sections = document.querySelectorAll('section[id]');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const id = entry.target.id;
-                    this.links.forEach(l => {
-                        l.classList.toggle('active', l.getAttribute('href') === `#${id}`);
-                    });
-                }
-            });
-        }, { threshold: 0.25 });
-        
-        sections.forEach(s => observer.observe(s));
     }
     
     open() {
@@ -632,41 +738,91 @@ class MobileNavManager {
 
 // ============================================
 // HERO SCROLL CUE CONTROLLER
-// Handles smooth click-to-scroll and auto-fadeout
+// Ambient Editorial Scroll Cue with Progressive Dissolution
 // ============================================
 class HeroScrollCue {
     constructor() {
-        this.cue = document.getElementById('hero-scroll-cue') || document.querySelector('.hero-scroll-cue, .scroll-cue');
+        this.cue = document.getElementById('hero-scroll-cue');
         if (!this.cue) return;
+        this.isTicking = false;
         this.init();
     }
 
     init() {
-        // Smooth click action
-        this.cue.addEventListener('click', (e) => {
+        const scrollToAbout = () => {
             const target = document.querySelector('#about');
             if (target) {
-                e.preventDefault();
                 target.scrollIntoView({ behavior: 'smooth' });
+            }
+        };
+
+        this.cue.addEventListener('click', scrollToAbout);
+        this.cue.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                scrollToAbout();
             }
         });
 
-        // Dynamic fadeout upon scroll past threshold
-        let isTicking = false;
+        // Progressive dissolution as user scrolls towards second section (#about)
+        const updateDissolve = () => {
+            const aboutSection = document.getElementById('about');
+            const scrollY = window.scrollY || window.pageYOffset;
+            
+            let opacity = 1;
+            let translateY = 0;
+
+            if (aboutSection) {
+                const aboutTop = aboutSection.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                // When aboutTop >= windowHeight: user is in hero/home section (opacity = 1)
+                // When aboutTop <= 80: user has arrived at the second section (#about) (opacity = 0)
+                // Between windowHeight and 80: progressive linear dissolution from 1 down to 0
+                if (aboutTop >= windowHeight) {
+                    opacity = 1;
+                    translateY = 0;
+                } else if (aboutTop <= 80) {
+                    opacity = 0;
+                    translateY = 16;
+                } else {
+                    const progress = (windowHeight - aboutTop) / (windowHeight - 80);
+                    opacity = Math.max(0, Math.min(1, 1 - progress));
+                    translateY = progress * 14;
+                }
+            } else {
+                // Fallback if #about not found in DOM
+                const fadeDistance = window.innerHeight * 0.7;
+                const progress = Math.min(1, scrollY / fadeDistance);
+                opacity = Math.max(0, 1 - progress);
+                translateY = progress * 14;
+            }
+
+            this.cue.style.opacity = opacity.toFixed(3);
+            this.cue.style.transform = `translateY(${translateY.toFixed(1)}px)`;
+
+            if (opacity <= 0.01) {
+                this.cue.style.visibility = 'hidden';
+                this.cue.style.pointerEvents = 'none';
+            } else {
+                this.cue.style.visibility = 'visible';
+                this.cue.style.pointerEvents = opacity > 0.2 ? 'auto' : 'none';
+            }
+        };
+
         window.addEventListener('scroll', () => {
-            if (!isTicking) {
+            if (!this.isTicking) {
                 window.requestAnimationFrame(() => {
-                    const scrollY = window.scrollY || window.pageYOffset;
-                    if (scrollY > 90) {
-                        this.cue.classList.add('hidden');
-                    } else {
-                        this.cue.classList.remove('hidden');
-                    }
-                    isTicking = false;
+                    updateDissolve();
+                    this.isTicking = false;
                 });
-                isTicking = true;
+                this.isTicking = true;
             }
         }, { passive: true });
+
+        // Trigger on initial load and window resize
+        updateDissolve();
+        window.addEventListener('resize', updateDissolve, { passive: true });
     }
 }
 
@@ -737,13 +893,17 @@ document.addEventListener('DOMContentLoaded', () => {
     new MobileNavManager();
     
     // Initialize systems
-    new SystemLattice();
+    const lattice = new SystemLattice();
     new CursorGlow();
     new ScrollAnimations();
     new HeroScrollCue();
     new FuturisticButtonFX();
-    if (window.RegressionSurfaceLab) new RegressionSurfaceLab();
-    new Navigation();
+    const regLab = window.RegressionSurfaceLab ? new window.RegressionSurfaceLab() : null;
+    
+    // Initialize Navigation, Progress & Lifecycle
+    new ScrollSpyManager();
+    new ScrollProgressIndicator();
+    new HeroLifecycleController(lattice, regLab);
     
     // Initialize Projects & Architecture Systems
     new KineticStream(); // Executive Projects Grid

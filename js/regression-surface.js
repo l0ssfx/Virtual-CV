@@ -135,6 +135,7 @@ class RegressionSurfaceLab {
         // Render Loop Management
         this.animationFrameId = null;
         this.isTabVisible = true;
+        this.isHeroVisible = true;
 
         this.init();
     }
@@ -1195,6 +1196,14 @@ class RegressionSurfaceLab {
                 // Trigger celebratory ripple on model change
                 this.ripples.push({ x: 0, z: 0, startTime: Date.now(), amplitude: 0.65 });
 
+                // Trigger tactile pulse animation on formula badge
+                const formulaBadge = document.getElementById('reg-formula-badge');
+                if (formulaBadge) {
+                    formulaBadge.classList.remove('formula-pulsing');
+                    void formulaBadge.offsetWidth;
+                    formulaBadge.classList.add('formula-pulsing');
+                }
+
                 // Update target elevation grid for morphing
                 this.updateTargetElevationGrid();
 
@@ -1327,9 +1336,25 @@ class RegressionSurfaceLab {
         this.ctx.scale(this.dpr, this.dpr);
     }
 
+    pause() {
+        this.isHeroVisible = false;
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+    }
+
+    resume() {
+        if (!this.isHeroVisible) {
+            this.isHeroVisible = true;
+            this.startLoop();
+        }
+    }
+
     startLoop() {
+        if (this.animationFrameId) return;
         const loop = () => {
-            if (!this.isTabVisible) {
+            if (!this.isTabVisible || !this.isHeroVisible) {
                 this.animationFrameId = null;
                 return;
             }
