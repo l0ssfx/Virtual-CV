@@ -32,9 +32,9 @@
     --c-text-muted: #617078; /* Muted Graphite */
     --c-text-dim: #8C9BA1; /* Dim Graphite */
     
-    /* Typography */
-    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Code Saver', monospace;
+    /* Typography - Classic Computer Terminal / IBM Plex Mono Heritage */
+    --font-primary: 'IBM Plex Mono', 'JetBrains Mono', 'Courier New', Courier, monospace;
+    --font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
     
     /* Spacing Scale */
     --space-xs: 0.25rem;
@@ -1419,10 +1419,10 @@ body:hover .cursor-glow {
 
 /* Hero Title - Refined Executive Scale */
 .hero-title {
-    font-size: clamp(2.8rem, 5.2vw, 4.2rem);
-    font-weight: 800;
-    line-height: 1.08;
-    letter-spacing: -0.035em;
+    font-size: clamp(2.6rem, 5vw, 4rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
     margin-bottom: 1.25rem;
     color: var(--c-text);
 }
@@ -1460,14 +1460,14 @@ body:hover .cursor-glow {
 /* Hero Subtitle — Intermediate Strategic Tagline */
 .hero-subtitle {
     font-family: var(--font-primary);
-    font-size: clamp(1.15rem, 2.2vw, 1.35rem);
+    font-size: clamp(1.1rem, 2vw, 1.25rem);
     font-weight: 600;
-    line-height: 1.4;
+    line-height: 1.45;
     color: var(--c-primary);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
     margin-top: -0.25rem;
     margin-bottom: 1.15rem;
-    max-width: 600px;
+    max-width: 620px;
 }
 
 [data-theme="dark"] .hero-subtitle {
@@ -1477,15 +1477,15 @@ body:hover .cursor-glow {
 /* Hero Narrative Copy */
 .hero-narrative-copy {
     margin-bottom: 1.75rem;
-    max-width: 580px;
+    max-width: 600px;
 }
 
 .hero-lead {
-    font-size: 1.05rem;
+    font-size: 1.0rem;
     color: var(--c-text-2);
-    line-height: 1.7;
+    line-height: 1.75;
     font-weight: 400;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
 }
 
 .hero-lead strong {
