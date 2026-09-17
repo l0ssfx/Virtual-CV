@@ -467,7 +467,217 @@ class Navigation {
         sections.forEach(section => observer.observe(section));
     }
 }
-// Skills integrated into Projects & Technical Capabilities
+
+
+// ============================================
+// EXECUTIVE TECHNOLOGY MATRIX
+// ============================================
+class TechSkillsMatrix {
+    constructor() {
+        this.container = document.getElementById('bento-grid');
+        if (!this.container) return;
+
+        // Domain Competency Architecture
+        this.data = {
+            "DATA": {
+                "label": "AI & Statistical Machine Learning",
+                "color": "#0891b2",
+                "nodes": [
+                    {
+                        "id": "python", 
+                        "name": "Python Core Architecture", 
+                        "tags": ["AsyncIO", "Multiprocessing", "OOP Engineering"], 
+                        "desc": "High-throughput runtime design. Concurrent async execution pipelines, object-oriented system design, and performant C-extension integration."
+                    },
+                    {
+                        "id": "numpy", 
+                        "name": "NumPy & Scientific Stack", 
+                        "tags": ["Vectorization", "Linear Algebra", "Tensor Math"], 
+                        "desc": "Vectorized linear algebra algorithms, multi-dimensional array manipulation, and memory-efficient matrix operations."
+                    },
+                    {
+                        "id": "stats", 
+                        "name": "Statistical Inference & Math", 
+                        "tags": ["Bayesian Inference", "A/B Testing", "Distribution Modeling"], 
+                        "desc": "Rigorous statistical modeling, hypothesis testing, confidence interval estimation, and parameter optimization in high-dimensional feature spaces."
+                    },
+                    {
+                        "id": "scikit", 
+                        "name": "Scikit-Learn & Classical ML", 
+                        "tags": ["Ensembles", "Cross-Validation", "Dimensionality Reduction"], 
+                        "desc": "Production estimator pipelines, automated feature scaling, PCA/t-SNE dimensionality reduction, and robust validation strategies."
+                    },
+                    {
+                        "id": "xgboost", 
+                        "name": "XGBoost & Gradient Boosting", 
+                        "tags": ["Tabular Modeling", "SHAP Explainability", "Optuna HPO"], 
+                        "desc": "Gradient boosted decision trees optimized for large-scale structured tabular datasets, integrated with SHAP feature interpretability."
+                    }
+                ]
+            },
+            "ML": {
+                "label": "Generative AI & Deep Learning",
+                "color": "#7c3aed",
+                "nodes": [
+                    {
+                        "id": "torch", 
+                        "name": "PyTorch & Deep Learning", 
+                        "tags": ["Custom Layers", "Autograd", "DDP Distributed"], 
+                        "desc": "Neural network architecture design, automatic differentiation, custom CUDA operator optimization, and Distributed Data Parallel (DDP) training."
+                    },
+                    {
+                        "id": "transformer", 
+                        "name": "Transformers & Fine-Tuning", 
+                        "tags": ["LoRA / QLoRA", "PEFT", "FlashAttention"], 
+                        "desc": "Encoder-Decoder transformer models, parameter-efficient fine-tuning (PEFT), and GGUF/AWQ quantization deployment pipelines."
+                    },
+                    {
+                        "id": "rag", 
+                        "name": "Enterprise RAG Architecture", 
+                        "tags": ["Hybrid Search", "Cross-Encoders", "Query Compression"], 
+                        "desc": "Production Retrieval-Augmented Generation using semantic chunking, dense-sparse hybrid vector search, and multi-stage reranking."
+                    },
+                    {
+                        "id": "prompt", 
+                        "name": "Agentic AI & LangGraph", 
+                        "tags": ["Tool Invocation", "ReAct Loops", "State Machines"], 
+                        "desc": "Autonomous multi-agent workflows, stateful execution graphs, deterministic fallback strategies, and tool orchestration."
+                    },
+                    {
+                        "id": "vector", 
+                        "name": "Vector Stores & Embeddings", 
+                        "tags": ["Qdrant", "Pinecone", "HNSW Indexing"], 
+                        "desc": "High-dimensional vector indexing, HNSW similarity graph optimization, and low-latency payload filtering."
+                    }
+                ]
+            },
+            "GENAI": {
+                "label": "Data Engineering & MLOps Infrastructure",
+                "color": "#2563eb",
+                "nodes": [
+                    {
+                        "id": "sql_etl", 
+                        "name": "SQL & Polars Data Pipelines", 
+                        "tags": ["Polars ETL", "Complex CTEs", "Apache Arrow"], 
+                        "desc": "Vectorized Polars DataFrames and analytical SQL transformations for multi-gigabyte in-memory data processing."
+                    },
+                    {
+                        "id": "api", 
+                        "name": "High-Throughput Serving & APIs", 
+                        "tags": ["FastAPI", "vLLM", "Pydantic v2"], 
+                        "desc": "Asynchronous REST microservices, Pydantic data validation, continuous batching with vLLM, and OpenAPI specs."
+                    },
+                    {
+                        "id": "deploy", 
+                        "name": "MLOps, Docker & CI/CD", 
+                        "tags": ["Docker", "MLflow", "GitHub Actions"], 
+                        "desc": "Multi-stage containerization, automated model artifact versioning with MLflow, and automated CI/CD deployment pipelines."
+                    },
+                    {
+                        "id": "observability", 
+                        "name": "Observability & Model Monitoring", 
+                        "tags": ["Evidently AI", "Telemetry", "Data Quality"], 
+                        "desc": "Continuous production data drift detection, feature distribution monitoring, automated assertions, and telemetry."
+                    }
+                ]
+            }
+        };
+
+        this.init();
+    }
+
+    init() {
+        this.renderGrid();
+        this.setupSearchFilter();
+    }
+
+    setupSearchFilter() {
+        const searchInput = document.getElementById('skill-search-input');
+        const clearBtn = document.getElementById('skill-search-clear');
+        const searchWrapper = document.querySelector('.skills-search-wrapper');
+
+        if (!searchInput) return;
+
+        const handleFilter = (query) => {
+            const trimmed = query.trim().toLowerCase();
+            const cards = document.querySelectorAll('.tech-skill-card');
+
+            if (trimmed === '') {
+                if (searchWrapper) searchWrapper.classList.remove('has-value');
+                cards.forEach(c => c.classList.remove('search-matched', 'dimmed'));
+                return;
+            }
+
+            if (searchWrapper) searchWrapper.classList.add('has-value');
+
+            cards.forEach(c => {
+                const name = (c.dataset.name || '').toLowerCase();
+                const desc = (c.dataset.desc || '').toLowerCase();
+                const tags = (c.dataset.tags || '').toLowerCase();
+
+                if (name.includes(trimmed) || desc.includes(trimmed) || tags.includes(trimmed)) {
+                    c.classList.add('search-matched');
+                    c.classList.remove('dimmed');
+                } else {
+                    c.classList.remove('search-matched');
+                    c.classList.add('dimmed');
+                }
+            });
+        };
+
+        searchInput.addEventListener('input', (e) => handleFilter(e.target.value));
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                handleFilter('');
+                searchInput.focus();
+            });
+        }
+    }
+
+    renderGrid() {
+        this.container.innerHTML = '';
+        
+        Object.keys(this.data).forEach(key => {
+            const group = this.data[key];
+            const col = document.createElement('div');
+            col.className = 'sector-column';
+            
+            const nodesHtml = group.nodes.map(node => {
+                const tagsHtml = node.tags.map(t => `<span class="competency-tag">${t}</span>`).join('');
+                return `
+                    <div class="tech-skill-card" 
+                         id="node-${node.id}"
+                         data-id="${node.id}" 
+                         data-name="${node.name}"
+                         data-desc="${node.desc}"
+                         data-tags="${node.tags.join(', ')}">
+                        <div class="card-header">
+                            <h4 class="skill-name">${node.name}</h4>
+                            <span class="skill-indicator"></span>
+                        </div>
+                        <p class="skill-desc">${node.desc}</p>
+                        <div class="skill-tags">
+                            ${tagsHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            col.innerHTML = `
+                <div class="sector-header">
+                    <h3 class="sector-title">${group.label}</h3>
+                </div>
+                <div class="sector-body">
+                    ${nodesHtml}
+                </div>
+            `;
+            
+            this.container.appendChild(col);
+        });
+    }
+}
 
 // ============================================
 // EXECUTIVE SCHEDULING INTERFACE (V7.0)
@@ -585,7 +795,7 @@ class ThemeManager {
         localStorage.setItem('renaldo-theme', theme);
 
         if (this.label) {
-            this.label.textContent = theme === 'dark' ? 'Light' : 'Dark';
+            this.label.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
         }
         if (this.btn) {
             const nextMode = theme === 'dark' ? 'light' : 'dark';
@@ -602,193 +812,6 @@ class ThemeManager {
 }
 
 // ============================================
-// MOBILE NAVIGATION MANAGER
-// Accessible Frosted-Glass Drawer Controller
-// ============================================
-class MobileNavManager {
-    constructor() {
-        this.menuBtn = document.getElementById('mobile-menu-btn');
-        this.drawer = document.getElementById('mobile-nav-drawer');
-        this.closeBtn = document.getElementById('drawer-close-btn');
-        this.backdrop = document.getElementById('drawer-backdrop');
-        this.links = document.querySelectorAll('.drawer-link');
-        
-        if (!this.menuBtn || !this.drawer) return;
-        
-        this.isOpen = false;
-        this.init();
-    }
-    
-    init() {
-        this.menuBtn.addEventListener('click', () => this.toggle());
-        if (this.closeBtn) this.closeBtn.addEventListener('click', () => this.close());
-        if (this.backdrop) this.backdrop.addEventListener('click', () => this.close());
-        
-        // Handle ESC key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isOpen) {
-                this.close();
-            }
-        });
-        
-        // Handle link clicks with smooth scroll
-        this.links.forEach(link => {
-            link.addEventListener('click', (e) => {
-                const targetId = link.getAttribute('href');
-                if (targetId && targetId.startsWith('#')) {
-                    e.preventDefault();
-                    this.close();
-                    
-                    const targetEl = document.querySelector(targetId);
-                    if (targetEl) {
-                        setTimeout(() => {
-                            targetEl.scrollIntoView({ behavior: 'smooth' });
-                        }, 250);
-                    }
-                }
-            });
-        });
-        
-        // Active link tracking on scroll
-        const sections = document.querySelectorAll('section[id]');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const id = entry.target.id;
-                    this.links.forEach(l => {
-                        l.classList.toggle('active', l.getAttribute('href') === `#${id}`);
-                    });
-                }
-            });
-        }, { threshold: 0.25 });
-        
-        sections.forEach(s => observer.observe(s));
-    }
-    
-    open() {
-        this.isOpen = true;
-        this.drawer.classList.add('is-open');
-        this.menuBtn.classList.add('is-active');
-        this.menuBtn.setAttribute('aria-expanded', 'true');
-        this.drawer.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-    }
-    
-    close() {
-        this.isOpen = false;
-        this.drawer.classList.remove('is-open');
-        this.menuBtn.classList.remove('is-active');
-        this.menuBtn.setAttribute('aria-expanded', 'false');
-        this.drawer.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
-    }
-    
-    toggle() {
-        if (this.isOpen) {
-            this.close();
-        } else {
-            this.open();
-        }
-    }
-}
-
-// ============================================
-// HERO SCROLL CUE CONTROLLER
-// Handles smooth click-to-scroll and auto-fadeout
-// ============================================
-class HeroScrollCue {
-    constructor() {
-        this.cue = document.getElementById('hero-scroll-cue') || document.querySelector('.hero-scroll-cue, .scroll-cue');
-        if (!this.cue) return;
-        this.init();
-    }
-
-    init() {
-        // Smooth click action
-        this.cue.addEventListener('click', (e) => {
-            const target = document.querySelector('#about');
-            if (target) {
-                e.preventDefault();
-                target.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-
-        // Dynamic fadeout upon scroll past threshold
-        let isTicking = false;
-        window.addEventListener('scroll', () => {
-            if (!isTicking) {
-                window.requestAnimationFrame(() => {
-                    const scrollY = window.scrollY || window.pageYOffset;
-                    if (scrollY > 90) {
-                        this.cue.classList.add('hidden');
-                    } else {
-                        this.cue.classList.remove('hidden');
-                    }
-                    isTicking = false;
-                });
-                isTicking = true;
-            }
-        }, { passive: true });
-    }
-}
-
-// ============================================
-// FUTURISTIC BUTTON TACTILE MOTION ENGINE
-// ============================================
-class FuturisticButtonFX {
-    constructor() {
-        this.buttons = document.querySelectorAll('.hero-btn');
-        if (!this.buttons.length) return;
-        this.init();
-    }
-
-    init() {
-        this.buttons.forEach(btn => {
-            // Interactive pointer tracking for dynamic sheen spotlight
-            btn.addEventListener('pointermove', (e) => {
-                const rect = btn.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                btn.style.setProperty('--btn-sheen-x', `${x}px`);
-                btn.style.setProperty('--btn-sheen-y', `${y}px`);
-            }, { passive: true });
-
-            // Tactile Quantum Ripple & Instant Compression on pointerdown
-            btn.addEventListener('pointerdown', (e) => {
-                btn.classList.add('is-pressed');
-
-                const rect = btn.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                const ripple = document.createElement('span');
-                ripple.className = 'quantum-ripple';
-                const size = Math.max(rect.width, rect.height) * 2.2;
-                ripple.style.width = `${size}px`;
-                ripple.style.height = `${size}px`;
-                ripple.style.left = `${x}px`;
-                ripple.style.top = `${y}px`;
-
-                btn.appendChild(ripple);
-
-                setTimeout(() => {
-                    ripple.remove();
-                }, 600);
-            });
-
-            // Clean release
-            const release = () => {
-                btn.classList.remove('is-pressed');
-            };
-
-            btn.addEventListener('pointerup', release);
-            btn.addEventListener('pointerleave', release);
-            btn.addEventListener('pointercancel', release);
-        });
-    }
-}
-
-// ============================================
 // INITIALIZATION
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -798,19 +821,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize UI
     UI.init();
     
-    // Initialize mobile navigation
-    new MobileNavManager();
-    
     // Initialize systems
     new SystemLattice();
     new CursorGlow();
     new ScrollAnimations();
-    new HeroScrollCue();
-    new FuturisticButtonFX();
     if (window.RegressionSurfaceLab) new RegressionSurfaceLab();
     new Navigation();
     
-    // Initialize Projects & Architecture Systems
+    // Initialize Technical Skills Matrix & Projects Grid
+    new TechSkillsMatrix();
     new KineticStream(); // Executive Projects Grid
     new RomeClock(); // Rome timezone clock & date ticker
     // ExecutiveScheduler initialization moved to contact-system.js
