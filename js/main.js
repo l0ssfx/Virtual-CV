@@ -6,53 +6,10 @@
  */
 
 // ============================================
-// CONFIGURATION
-// ============================================
-const CONFIG = {
-    colors: {
-        primary: '#183B4E',
-        accent: '#276A73',
-        purple: '#6F8F82',
-        success: '#6F8F82'
-    },
-    motion: {
-        fast: 150,
-        normal: 300,
-        slow: 500,
-        slower: 800
-    }
-};
-
-// ============================================
-// STATE MANAGEMENT
-// ============================================
-const State = {
-    explored: new Set(),
-    scrollY: 0,
-    mouseX: 0,
-    mouseY: 0
-};
-
-// ============================================
-// UI CONTROLLER
-// ============================================
-const UI = {
-    init() {
-        this.scrollIndicator = document.getElementById('scroll-indicator');
-    }
-};
-
-// ============================================
-// SYSTEM LATTICE (Global Background)
-// A depth-encoded signal environment.
-// Represents continuous intelligence and stable reference points.
-// ============================================
-// ============================================
 // SYSTEM LATTICE (3D Topographic Manifold & Vector Field Engine)
-// Designed for Senior Machine Learning Engineer Portfolio.
 // Features a 3D Topographic Elevation Surface (Loss Function Manifold),
 // Vector Field Flow Streams, Soft Gravitational Cursor Deformation,
-// and Depth Fog Dissolve in a Clean Light Blue Environment.
+// and Depth Fog Dissolve in an Ivory/Petrol Technical Environment.
 // ============================================
 class SystemLattice {
     constructor() {
@@ -387,12 +344,6 @@ class ScrollAnimations {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('revealed');
-                        
-                        // Track exploration (REMOVED: Automatic XP on section reveal)
-                        const section = entry.target.closest('section');
-                        if (section && !State.explored.has(section.id)) {
-                            State.explored.add(section.id);
-                        }
                     }
                 });
             },
@@ -402,29 +353,6 @@ class ScrollAnimations {
         document.querySelectorAll('[data-reveal]').forEach(el => {
             revealObserver.observe(el);
         });
-        
-        // Skill bar animation
-        const barObserver = new IntersectionObserver(
-            (entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const fills = entry.target.querySelectorAll('.bar-fill');
-                        fills.forEach(fill => {
-                            const width = fill.dataset.width;
-                            setTimeout(() => {
-                                fill.style.width = `${width}%`;
-                            }, 200);
-                        });
-                    }
-                });
-            },
-            { threshold: 0.3 }
-        );
-        
-        document.querySelectorAll('.skill-detail').forEach(el => {
-            barObserver.observe(el);
-        });
-        
     }
 }
 
@@ -805,9 +733,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Theme
     new ThemeManager();
 
-    // Initialize UI
-    UI.init();
-    
     // Initialize mobile navigation
     new MobileNavManager();
     
