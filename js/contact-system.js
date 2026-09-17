@@ -419,6 +419,12 @@ class ContactInterface {
     // STATE 2: SLOTS VIEW
     async selectDate(dateStr) {
         this.selectedDate = dateStr;
+        
+        // Clear any calendar error states on date selection
+        document.querySelector('.console-column.right')?.classList.remove('has-error', 'fast-vibrate');
+        document.getElementById('calendar-widget')?.classList.remove('has-error', 'fast-vibrate');
+        document.getElementById('slot-display')?.classList.remove('has-error', 'fast-vibrate');
+
         this.updateSlotDisplay(); // Show date, pending time
 
         const calendarView = document.querySelector('.calendar-view');
@@ -484,8 +490,14 @@ class ContactInterface {
         btnEl.classList.add('selected');
         
         this.selectedSlot = timeStr;
+
+        // Clear calendar error states on slot selection
+        document.querySelector('.console-column.right')?.classList.remove('has-error', 'fast-vibrate');
+        document.getElementById('calendar-widget')?.classList.remove('has-error', 'fast-vibrate');
+        document.getElementById('slot-display')?.classList.remove('has-error', 'fast-vibrate');
+
         this.updateSlotDisplay();
-        this.showToast('Time Slot Selected', `${this.selectedDate} at ${timeStr} (CET). Click "Confirm & Schedule Call" to reserve.`, 'info', 3500);
+        this.showToast('Time Slot Selected', `${this.selectedDate} at ${timeStr} (CET). Click "Schedule Call" to reserve.`, 'info', 3500);
     }
 
     clearSelectedSlot() {
@@ -513,14 +525,23 @@ class ContactInterface {
         const submitText = document.getElementById('submit-btn-text');
         const submitIcon = document.getElementById('submit-btn-icon');
 
+        // Always maintain Schedule Call text and calendar check icon
+        if (submitText && submitText.textContent !== 'Schedule Call') {
+            submitText.textContent = 'Schedule Call';
+        }
+        if (submitIcon && !submitIcon.querySelector('.fa-calendar-check')) {
+            submitIcon.innerHTML = '<i class="fa-solid fa-calendar-check"></i>';
+        }
+
         if (this.selectedDate && this.selectedSlot) {
+            document.querySelector('.console-column.right')?.classList.remove('has-error', 'fast-vibrate');
+            document.getElementById('calendar-widget')?.classList.remove('has-error', 'fast-vibrate');
+            document.getElementById('slot-display')?.classList.remove('has-error', 'fast-vibrate');
             this.slotDisplay.classList.add('active');
             if (slotValEl) slotValEl.textContent = `📅 ${this.selectedDate} @ ${this.selectedSlot} CET`;
             if (clearBtn) clearBtn.style.display = 'inline-flex';
             if (submitBtn) {
                 submitBtn.classList.add('meeting-mode');
-                if (submitText) submitText.textContent = 'Confirm & Schedule Call';
-                if (submitIcon) submitIcon.innerHTML = '<i class="fa-solid fa-calendar-check"></i>';
             }
         } else if (this.selectedDate) {
             this.slotDisplay.classList.remove('active');
@@ -528,8 +549,6 @@ class ContactInterface {
             if (clearBtn) clearBtn.style.display = 'inline-flex';
             if (submitBtn) {
                 submitBtn.classList.remove('meeting-mode');
-                if (submitText) submitText.textContent = 'Send Message';
-                if (submitIcon) submitIcon.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
             }
         } else {
             this.slotDisplay.classList.remove('active');
@@ -537,10 +556,10 @@ class ContactInterface {
             if (clearBtn) clearBtn.style.display = 'none';
             if (submitBtn) {
                 submitBtn.classList.remove('meeting-mode');
-                if (submitText) submitText.textContent = 'Send Message';
-                if (submitIcon) submitIcon.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
             }
         }
+
+        this.checkFormReadiness();
     }
 
     // === HUD CYBER TOAST NOTIFICATION ENGINE ===
@@ -652,12 +671,15 @@ class ContactInterface {
     bindFormEvents() {
         if (!this.form) return;
 
-        // Clear error states on user input
+        // Clear error states on user input and update readiness glow
         this.form.querySelectorAll('input, textarea').forEach(input => {
-            input.addEventListener('input', () => {
-                input.closest('.input-group')?.classList.remove('has-error');
-                input.closest('.checkbox-container')?.classList.remove('has-error');
-            });
+            const clearError = () => {
+                input.closest('.input-group')?.classList.remove('has-error', 'fast-vibrate');
+                input.closest('.checkbox-container')?.classList.remove('has-error', 'fast-vibrate');
+                this.checkFormReadiness();
+            };
+            input.addEventListener('input', clearError);
+            input.addEventListener('change', clearError);
         });
 
         // Slot clear button listener
@@ -669,64 +691,122 @@ class ContactInterface {
         this.form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Clear any previous error styling
-            this.form.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
-
             // EXTRACT LEAD DATA
             const firstNameInput = document.getElementById('s-first-name');
             const lastNameInput = document.getElementById('s-last-name');
             const emailInput = document.getElementById('s-email');
+            const phoneInput = document.getElementById('s-phone');
             const messageInput = document.getElementById('s-message');
             const privacyInput = document.getElementById('s-privacy');
+            const slotDisplay = document.getElementById('slot-display');
+            const calendarCol = document.querySelector('.console-column.right');
+            const calendarWidget = document.getElementById('calendar-widget');
+            const btn = document.getElementById('scheduler-submit-btn') || this.form.querySelector('.scheduler-submit');
 
             const firstName = firstNameInput?.value.trim() || '';
             const lastName = lastNameInput?.value.trim() || '';
             const email = emailInput?.value.trim() || '';
-            const phone = document.getElementById('s-phone')?.value.trim() || '';
+            const phone = phoneInput?.value.trim() || '';
             const company = document.getElementById('s-company')?.value.trim() || '';
             const role = document.getElementById('s-role')?.value.trim() || '';
             const message = messageInput?.value.trim() || '';
             const privacyAgreed = privacyInput?.checked || false;
             const fullName = `${firstName} ${lastName}`.trim() || 'Prospective Lead';
 
-            // ZERO-ALERT MICRO-VALIDATIONS
-            if (!firstName) {
-                firstNameInput?.closest('.input-group')?.classList.add('has-error');
-                firstNameInput?.focus();
-                this.showToast('Missing First Name', 'Please enter your first name to continue.', 'warning');
+            const isSlotSelected = !!(this.selectedDate && this.selectedSlot);
+            const hasValidEmail = email.includes('@') && email.includes('.');
+
+            // COLLECT ALL MISSING PARTS
+            const missingInputs = [];
+            if (!firstName) missingInputs.push(firstNameInput);
+            if (!lastName) missingInputs.push(lastNameInput);
+            if (!email || !hasValidEmail) missingInputs.push(emailInput);
+            if (!phone) missingInputs.push(phoneInput);
+            if (!message) missingInputs.push(messageInput);
+
+            const hasMissingFields = missingInputs.length > 0;
+            const hasMissingAgreement = !privacyAgreed;
+            const hasMissingSlot = !isSlotSelected;
+
+            // IF ANY MANDATORY PART IS MISSING, TRIGGER RAPID VIBRATION & RED COLOR
+            if (hasMissingFields || hasMissingAgreement || hasMissingSlot) {
+                const triggerVibrate = (target) => {
+                    if (!target) return;
+                    target.classList.remove('fast-vibrate');
+                    target.classList.add('has-error');
+                    void target.offsetWidth; // force reflow to re-trigger vibration animation
+                    target.classList.add('fast-vibrate');
+                };
+
+                // 1. Vibrate & highlight each missing field simultaneously
+                missingInputs.forEach(input => {
+                    const group = input.closest('.input-group') || input;
+                    triggerVibrate(group);
+                });
+
+                // 2. Vibrate & highlight privacy policy agreement if unchecked
+                if (hasMissingAgreement && privacyInput) {
+                    const chkContainer = privacyInput.closest('.checkbox-container') || privacyInput;
+                    triggerVibrate(chkContainer);
+                }
+
+                // 3. Vibrate & highlight calendar / slot selection if not selected
+                if (hasMissingSlot) {
+                    if (slotDisplay) triggerVibrate(slotDisplay);
+                    if (calendarCol) triggerVibrate(calendarCol);
+                    if (calendarWidget) triggerVibrate(calendarWidget);
+                }
+
+                // 4. Trigger tactile rejected vibration on submit button
+                if (btn) {
+                    btn.classList.remove('btn-rejected', 'fast-vibrate');
+                    void btn.offsetWidth;
+                    btn.classList.add('btn-rejected', 'fast-vibrate');
+                    setTimeout(() => {
+                        btn.classList.remove('btn-rejected', 'fast-vibrate');
+                    }, 400);
+                }
+
+                // 5. High-clarity English notifications
+                let toastTitle = 'Information Required';
+                let toastMessage = 'Please complete all required fields, select a calendar slot, and accept the Privacy Policy.';
+
+                if (hasMissingFields && hasMissingSlot && hasMissingAgreement) {
+                    toastTitle = 'Required Details Incomplete';
+                    toastMessage = 'Please fill in all mandatory fields, select a calendar time slot, and agree to the Privacy Policy.';
+                } else if (hasMissingFields && hasMissingSlot) {
+                    toastTitle = 'Details & Time Slot Required';
+                    toastMessage = 'Please fill in the required contact fields and choose a date & time slot from the calendar.';
+                } else if (hasMissingSlot && hasMissingAgreement) {
+                    toastTitle = 'Slot & Privacy Required';
+                    toastMessage = 'Please select a meeting time slot from the calendar and check the Privacy Policy agreement.';
+                } else if (hasMissingSlot) {
+                    toastTitle = 'Meeting Slot Required';
+                    toastMessage = 'Please choose a date and an available time slot from the calendar to schedule your call.';
+                } else if (hasMissingAgreement) {
+                    toastTitle = 'Privacy Policy Required';
+                    toastMessage = 'Please check the agreement box to accept the Privacy Policy before scheduling.';
+                } else if (hasMissingFields) {
+                    toastTitle = 'Missing Mandatory Fields';
+                    toastMessage = 'Please complete all mandatory fields highlighted in red.';
+                }
+
+                this.showToast(toastTitle, toastMessage, 'warning', 4500);
+
+                // Focus first invalid element smoothly
+                if (missingInputs.length > 0) {
+                    missingInputs[0].focus();
+                } else if (hasMissingSlot) {
+                    calendarWidget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (hasMissingAgreement) {
+                    privacyInput?.focus();
+                }
+
                 return;
             }
 
-            if (!lastName) {
-                lastNameInput?.closest('.input-group')?.classList.add('has-error');
-                lastNameInput?.focus();
-                this.showToast('Missing Last Name', 'Please enter your last name to continue.', 'warning');
-                return;
-            }
-
-            if (!email || !email.includes('@') || !email.includes('.')) {
-                emailInput?.closest('.input-group')?.classList.add('has-error');
-                emailInput?.focus();
-                this.showToast('Invalid Email', 'Please enter a valid email address.', 'warning');
-                return;
-            }
-
-            if (!message) {
-                messageInput?.closest('.input-group')?.classList.add('has-error');
-                messageInput?.focus();
-                this.showToast('Message Required', 'Please share a brief note about your project or inquiry.', 'warning');
-                return;
-            }
-
-            if (!privacyAgreed) {
-                privacyInput?.closest('.checkbox-container')?.classList.add('has-error');
-                this.showToast('Privacy Policy Required', 'Please accept the GDPR privacy policy to submit.', 'warning');
-                return;
-            }
-
-            const btn = document.getElementById('scheduler-submit-btn') || this.form.querySelector('.scheduler-submit');
+            const isMeetingMode = true; // All requirements satisfied, always meeting booking mode
             const originalText = btn.innerHTML;
-            const isMeetingMode = !!(this.selectedDate && this.selectedSlot);
             
             // STATE: SUBMITTING
             btn.innerHTML = `<span class="btn-text"><i class="fa-solid fa-circle-notch fa-spin"></i> ${isMeetingMode ? 'Scheduling Call...' : 'Sending Message...'}</span>`;
@@ -802,12 +882,15 @@ class ContactInterface {
                 this.selectedSlot = null;
                 this.updateSlotDisplay();
                 
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
+                const restoreDefaultBtn = () => {
+                    btn.innerHTML = `<span class="btn-icon" id="submit-btn-icon"><i class="fa-solid fa-calendar-check"></i></span><span class="btn-text" id="submit-btn-text">Schedule Call</span><span class="btn-shine"></span>`;
                     btn.disabled = false;
                     btn.style.opacity = '';
                     btn.style.borderColor = '';
-                }, 3000);
+                    this.checkFormReadiness();
+                };
+
+                setTimeout(restoreDefaultBtn, 3000);
                 
             } else if (result.status === 'INQUIRY_CONFIRMED' || (!isMeetingMode && (result.status === 'OFFLINE_MODE' || result.isFallback))) {
                 btn.innerHTML = `<span class="btn-text" style="color:var(--c-success)"><i class="fa-solid fa-check-circle"></i> Message Sent!</span>`;
@@ -820,12 +903,15 @@ class ContactInterface {
                 this.selectedSlot = null;
                 this.updateSlotDisplay();
 
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
+                const restoreDefaultBtn = () => {
+                    btn.innerHTML = `<span class="btn-icon" id="submit-btn-icon"><i class="fa-solid fa-calendar-check"></i></span><span class="btn-text" id="submit-btn-text">Schedule Call</span><span class="btn-shine"></span>`;
                     btn.disabled = false;
                     btn.style.opacity = '';
                     btn.style.borderColor = '';
-                }, 3000);
+                    this.checkFormReadiness();
+                };
+
+                setTimeout(restoreDefaultBtn, 3000);
 
             } else if (result.status === 'OFFLINE_MODE' || result.isFallback) {
                 btn.innerHTML = `<span class="btn-text" style="color:var(--c-warning)"><i class="fa-solid fa-triangle-exclamation"></i> Demo Mode</span>`;
@@ -847,12 +933,15 @@ class ContactInterface {
                 this.selectedSlot = null;
                 this.updateSlotDisplay();
 
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
+                const restoreDefaultBtn = () => {
+                    btn.innerHTML = `<span class="btn-icon" id="submit-btn-icon"><i class="fa-solid fa-calendar-check"></i></span><span class="btn-text" id="submit-btn-text">Schedule Call</span><span class="btn-shine"></span>`;
                     btn.disabled = false;
                     btn.style.opacity = '';
                     btn.style.borderColor = '';
-                }, 3000);
+                    this.checkFormReadiness();
+                };
+
+                setTimeout(restoreDefaultBtn, 3000);
                 
             } else {
                 btn.innerHTML = `<span class="btn-text" style="color:var(--c-error)"><i class="fa-solid fa-circle-xmark"></i> Error</span>`;
@@ -860,14 +949,44 @@ class ContactInterface {
                 
                 this.showToast('Transmission Error', result.error || 'Unable to complete request. Please contact renaldo.arapi@live.it directly.', 'error', 6000);
                 
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
+                const restoreDefaultBtn = () => {
+                    btn.innerHTML = `<span class="btn-icon" id="submit-btn-icon"><i class="fa-solid fa-calendar-check"></i></span><span class="btn-text" id="submit-btn-text">Schedule Call</span><span class="btn-shine"></span>`;
                     btn.disabled = false;
                     btn.style.opacity = '';
                     btn.style.borderColor = '';
-                }, 3000);
+                    this.checkFormReadiness();
+                };
+
+                setTimeout(restoreDefaultBtn, 3000);
             }
         });
+
+        // Initialize readiness check on mount
+        this.checkFormReadiness();
+    }
+
+    checkFormReadiness() {
+        const submitBtn = document.getElementById('scheduler-submit-btn');
+        if (!submitBtn) return;
+
+        const firstName = document.getElementById('s-first-name')?.value.trim() || '';
+        const lastName = document.getElementById('s-last-name')?.value.trim() || '';
+        const email = document.getElementById('s-email')?.value.trim() || '';
+        const phone = document.getElementById('s-phone')?.value.trim() || '';
+        const message = document.getElementById('s-message')?.value.trim() || '';
+        const privacy = document.getElementById('s-privacy')?.checked || false;
+
+        const isSlotSelected = !!(this.selectedDate && this.selectedSlot);
+        const hasValidEmail = email.includes('@') && email.includes('.');
+        const areMandatoryFilled = !!(firstName && lastName && hasValidEmail && phone && message);
+        const isPrivacyAgreed = !!privacy;
+
+        // Condition: slot selected + mandatory fields inserted + pressed agreement button
+        if (isSlotSelected && areMandatoryFilled && isPrivacyAgreed) {
+            submitBtn.classList.add('ready-glow');
+        } else {
+            submitBtn.classList.remove('ready-glow');
+        }
     }
 
     // PRIVACY POLICY MODAL CONTROLLER

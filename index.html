@@ -26,7 +26,7 @@
         "url": "https://renaldo.ai",
         "sameAs": [
             "https://linkedin.com/in/renaldo-arapi",
-            "https://github.com/Orey97"
+            "https://github.com/l0ssfx"
         ]
     }
     </script>
@@ -73,9 +73,9 @@
             
             <ul class="nav-menu">
                 <li><a href="#hero" class="nav-item active" data-idx="00" aria-current="page">Home</a></li>
-                <li><a href="#about" class="nav-item" data-idx="01">Profile &amp; Credentials</a></li>
-                <li><a href="#projects" class="nav-item" data-idx="02">Projects &amp; Skills</a></li>
-                <li><a href="#contact" class="nav-item" data-idx="03">Schedule &amp; Contact</a></li>
+                <li><a href="#about" class="nav-item" data-idx="01">Profile</a></li>
+                <li><a href="#projects" class="nav-item" data-idx="02">Projects</a></li>
+                <li><a href="#contact" class="nav-item" data-idx="03">Contact</a></li>
             </ul>
             
             <div class="nav-meta">
@@ -119,9 +119,9 @@
             <nav class="drawer-nav">
                 <ul class="drawer-menu">
                     <li><a href="#hero" class="drawer-link active" data-idx="00"><i class="fa-solid fa-house"></i> <span>Home</span></a></li>
-                    <li><a href="#about" class="drawer-link" data-idx="01"><i class="fa-solid fa-graduation-cap"></i> <span>Profile &amp; Credentials</span></a></li>
-                    <li><a href="#projects" class="drawer-link" data-idx="02"><i class="fa-solid fa-diagram-project"></i> <span>Projects &amp; Skills</span></a></li>
-                    <li><a href="#contact" class="drawer-link" data-idx="03"><i class="fa-solid fa-calendar-check"></i> <span>Schedule &amp; Contact</span></a></li>
+                    <li><a href="#about" class="drawer-link" data-idx="01"><i class="fa-solid fa-graduation-cap"></i> <span>Profile</span></a></li>
+                    <li><a href="#projects" class="drawer-link" data-idx="02"><i class="fa-solid fa-diagram-project"></i> <span>Projects</span></a></li>
+                    <li><a href="#contact" class="drawer-link" data-idx="03"><i class="fa-solid fa-calendar-check"></i> <span>Contact</span></a></li>
                 </ul>
             </nav>
             <div class="drawer-footer">
@@ -405,7 +405,7 @@
                                 <span class="console-title">Send a Message</span>
                             </div>
                             
-                            <form class="scheduler-form" id="scheduler-form">
+                            <form class="scheduler-form" id="scheduler-form" novalidate>
                                 <div class="form-row">
                                     <div class="input-group">
                                         <label for="s-first-name">First Name <span class="req-star">*</span></label>
@@ -422,8 +422,8 @@
                                         <input type="email" id="s-email" placeholder="john@company.com" required>
                                     </div>
                                     <div class="input-group">
-                                        <label for="s-phone">Phone Number <span class="opt-label">(Optional)</span></label>
-                                        <input type="tel" id="s-phone" placeholder="+39 333 123 4567">
+                                        <label for="s-phone">Phone Number <span class="req-star">*</span></label>
+                                        <input type="tel" id="s-phone" placeholder="+39 333 123 4567" required>
                                     </div>
                                 </div>
                                 <div class="form-row">
@@ -457,9 +457,9 @@
                                         </span>
                                     </label>
                                 </div>
-                                <button type="submit" class="btn btn-plasma scheduler-submit" id="scheduler-submit-btn">
-                                    <span class="btn-text" id="submit-btn-text">Send Message</span>
-                                    <span class="btn-icon" id="submit-btn-icon"><i class="fa-solid fa-paper-plane"></i></span>
+                                <button type="submit" class="btn scheduler-submit" id="scheduler-submit-btn">
+                                    <span class="btn-icon" id="submit-btn-icon"><i class="fa-solid fa-calendar-check"></i></span>
+                                    <span class="btn-text" id="submit-btn-text">Schedule Call</span>
                                     <span class="btn-shine"></span>
                                 </button>
                             </form>
@@ -475,31 +475,6 @@
                                 <!-- Calendar Generated via JS -->
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Access Dock -->
-                    <div class="access-dock">
-                        <a href="https://linkedin.com/in/renaldo-arapi" target="_blank" rel="noopener noreferrer" class="dock-item" data-port="LINKEDIN">
-                            <div class="dock-icon"><i class="fa-brands fa-linkedin-in"></i></div>
-                            <div class="dock-meta">
-                                <span class="dock-label">LinkedIn</span>
-                                <span class="dock-status">Connect</span>
-                            </div>
-                        </a>
-                        <a href="https://github.com/Orey97" target="_blank" rel="noopener noreferrer" class="dock-item" data-port="GITHUB">
-                            <div class="dock-icon"><i class="fa-brands fa-github"></i></div>
-                            <div class="dock-meta">
-                                <span class="dock-label">GitHub</span>
-                                <span class="dock-status">View Repos</span>
-                            </div>
-                        </a>
-                        <a href="mailto:renaldo.arapi@live.it" class="dock-item" data-port="EMAIL">
-                            <div class="dock-icon"><i class="fa-solid fa-envelope"></i></div>
-                            <div class="dock-meta">
-                                <span class="dock-label">Email</span>
-                                <span class="dock-status">Direct Mail</span>
-                            </div>
-                        </a>
                     </div>
                 </div>
             </div>
@@ -517,6 +492,10 @@
                 </span>
             </div>
             <div class="footer-col right">
+                <a href="https://github.com/l0ssfx" target="_blank" rel="noopener noreferrer" class="footer-social-link" title="GitHub" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+                <a href="https://linkedin.com/in/renaldo-arapi" target="_blank" rel="noopener noreferrer" class="footer-social-link" title="LinkedIn" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                <a href="mailto:renaldo.arapi@live.it" class="footer-social-link" title="Email" aria-label="Direct Email"><i class="fa-solid fa-envelope"></i></a>
+                <span class="sys-separator">·</span>
                 <button type="button" class="footer-privacy-btn" id="footer-privacy-btn">
                     <i class="fa-solid fa-shield-halved"></i> Privacy Policy
                 </button>
