@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const dest = 'dist';
-const dirs = ['css', 'js', 'assets'];
+const dirs = ['css', 'js', 'assets', 'data'];
 const files = ['index.html'];
 
 // Clean dist

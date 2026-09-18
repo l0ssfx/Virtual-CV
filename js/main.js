@@ -749,49 +749,49 @@ class HeroScrollCue {
     }
 
     init() {
-        const scrollToAbout = () => {
-            const target = document.querySelector('#about');
+        const scrollToProfile = () => {
+            const target = document.querySelector('#profile') || document.querySelector('#about');
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth' });
             }
         };
 
-        this.cue.addEventListener('click', scrollToAbout);
+        this.cue.addEventListener('click', scrollToProfile);
         this.cue.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                scrollToAbout();
+                scrollToProfile();
             }
         });
 
-        // Progressive dissolution as user scrolls towards second section (#about)
+        // Progressive dissolution as user scrolls towards second section (#profile)
         const updateDissolve = () => {
-            const aboutSection = document.getElementById('about');
+            const profileSection = document.getElementById('profile') || document.getElementById('about');
             const scrollY = window.scrollY || window.pageYOffset;
             
             let opacity = 1;
             let translateY = 0;
 
-            if (aboutSection) {
-                const aboutTop = aboutSection.getBoundingClientRect().top;
+            if (profileSection) {
+                const profileTop = profileSection.getBoundingClientRect().top;
                 const windowHeight = window.innerHeight;
                 
-                // When aboutTop >= windowHeight: user is in hero/home section (opacity = 1)
-                // When aboutTop <= 80: user has arrived at the second section (#about) (opacity = 0)
+                // When profileTop >= windowHeight: user is in hero/home section (opacity = 1)
+                // When profileTop <= 80: user has arrived at the second section (#profile) (opacity = 0)
                 // Between windowHeight and 80: progressive linear dissolution from 1 down to 0
-                if (aboutTop >= windowHeight) {
+                if (profileTop >= windowHeight) {
                     opacity = 1;
                     translateY = 0;
-                } else if (aboutTop <= 80) {
+                } else if (profileTop <= 80) {
                     opacity = 0;
                     translateY = 16;
                 } else {
-                    const progress = (windowHeight - aboutTop) / (windowHeight - 80);
+                    const progress = (windowHeight - profileTop) / (windowHeight - 80);
                     opacity = Math.max(0, Math.min(1, 1 - progress));
                     translateY = progress * 14;
                 }
             } else {
-                // Fallback if #about not found in DOM
+                // Fallback if #profile not found in DOM
                 const fadeDistance = window.innerHeight * 0.7;
                 const progress = Math.min(1, scrollY / fadeDistance);
                 opacity = Math.max(0, 1 - progress);
@@ -883,6 +883,163 @@ class FuturisticButtonFX {
 }
 
 // ============================================
+// SKILLS MATRIX RUNTIME CONSOLE CONTROLLER
+// Domain Tab Filtering, Live Telemetry HUD & CV Feedback
+// ============================================
+class SkillsMatrixController {
+    constructor() {
+        this.tabs = document.querySelectorAll('#skills-domain-tabs .skill-tab');
+        this.chips = document.querySelectorAll('#skills-rack-grid .skill-chip');
+        this.telemetryText = document.getElementById('skills-telemetry-text');
+        this.telemetryDot = document.getElementById('skills-telemetry-dot');
+        this.telemetryBadge = document.getElementById('skills-telemetry-badge');
+        this.cvBtn = document.getElementById('cv-download-btn');
+
+        this.currentDomain = 'all';
+        this.revertTimeout = null;
+
+        this.domainMeta = {
+            all: {
+                text: 'Stack Integrity: 16 Core Modules · Active Production Topology',
+                badge: '100% Deterministic',
+                color: '#10b981'
+            },
+            stats: {
+                text: 'Domain: Statistical Inference & Quantitative Modeling · 4 Active Modules',
+                badge: 'M.Sc. Rigor',
+                color: '#38bdf8'
+            },
+            ml: {
+                text: 'Domain: Neural Architectures & SOTA Estimators · 4 Active Modules',
+                badge: 'PyTorch / GPU',
+                color: '#818cf8'
+            },
+            llm: {
+                text: 'Domain: Retrieval Augmented Generation & Agent Topologies · 4 Active Modules',
+                badge: 'ReAct Systems',
+                color: '#34d399'
+            },
+            infra: {
+                text: 'Domain: Deterministic Serving & Distributed Cloud Infrastructure · 4 Active Modules',
+                badge: 'Cloud OCI',
+                color: '#fbbf24'
+            }
+        };
+
+        if (!this.tabs.length || !this.chips.length) return;
+        this.init();
+    }
+
+    init() {
+        // Tab click handling & ARIA synchronization
+        this.tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const domain = tab.getAttribute('data-domain') || 'all';
+                this.currentDomain = domain;
+
+                // Update tab states & ARIA
+                this.tabs.forEach(t => {
+                    const isActive = (t === tab);
+                    t.classList.toggle('active', isActive);
+                    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+
+                // Update telemetry
+                this.updateTelemetryForDomain(domain);
+
+                // Filter skills chips with hardware-accelerated micro-transition
+                this.chips.forEach(chip => {
+                    const chipDomain = chip.getAttribute('data-domain');
+                    const isMatch = (domain === 'all' || chipDomain === domain);
+
+                    if (isMatch) {
+                        chip.classList.remove('chip-hidden');
+                        chip.style.opacity = '0';
+                        chip.style.transform = 'scale(0.96)';
+                        requestAnimationFrame(() => {
+                            chip.style.transition = 'opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1)';
+                            chip.style.opacity = '1';
+                            chip.style.transform = 'scale(1)';
+                        });
+                    } else {
+                        chip.classList.add('chip-hidden');
+                    }
+                });
+            });
+        });
+
+        // Chip Hover / Focus Live Telemetry Inspection Stream
+        this.chips.forEach(chip => {
+            const inspectChip = () => {
+                if (this.revertTimeout) clearTimeout(this.revertTimeout);
+                const name = chip.getAttribute('data-name') || chip.querySelector('.skill-name')?.textContent || 'Module';
+                const meta = chip.getAttribute('data-meta') || 'Active Production Capability';
+                const domain = chip.getAttribute('data-domain') || 'all';
+                const domainColor = this.domainMeta[domain]?.color || '#10b981';
+
+                if (this.telemetryText) {
+                    this.telemetryText.classList.add('is-inspecting');
+                    this.telemetryText.textContent = `[INSPECT: ${name.toUpperCase()}] // ${meta}`;
+                }
+                if (this.telemetryDot) {
+                    this.telemetryDot.style.background = domainColor;
+                    this.telemetryDot.style.boxShadow = `0 0 10px ${domainColor}`;
+                }
+                if (this.telemetryBadge) {
+                    this.telemetryBadge.textContent = 'Telemetry Live';
+                }
+            };
+
+            const releaseChip = () => {
+                if (this.revertTimeout) clearTimeout(this.revertTimeout);
+                this.revertTimeout = setTimeout(() => {
+                    this.updateTelemetryForDomain(this.currentDomain);
+                }, 180);
+            };
+
+            chip.addEventListener('pointerenter', inspectChip);
+            chip.addEventListener('pointerleave', releaseChip);
+            chip.addEventListener('focus', inspectChip);
+            chip.addEventListener('blur', releaseChip);
+        });
+
+        // CV Download Button Tactical Feedback
+        if (this.cvBtn) {
+            this.cvBtn.addEventListener('click', () => {
+                const originalText = this.cvBtn.querySelector('.btn-text')?.textContent || 'Download CV';
+                const textEl = this.cvBtn.querySelector('.btn-text');
+                const iconEl = this.cvBtn.querySelector('.btn-icon i');
+
+                this.cvBtn.classList.add('is-downloading');
+                if (textEl) textEl.textContent = 'Download Initiated';
+                if (iconEl) iconEl.className = 'fa-solid fa-circle-check';
+
+                setTimeout(() => {
+                    this.cvBtn.classList.remove('is-downloading');
+                    if (textEl) textEl.textContent = originalText;
+                    if (iconEl) iconEl.className = 'fa-solid fa-file-arrow-down';
+                }, 2200);
+            });
+        }
+    }
+
+    updateTelemetryForDomain(domain) {
+        const meta = this.domainMeta[domain] || this.domainMeta.all;
+        if (this.telemetryText) {
+            this.telemetryText.classList.remove('is-inspecting');
+            this.telemetryText.textContent = meta.text;
+        }
+        if (this.telemetryDot) {
+            this.telemetryDot.style.background = meta.color;
+            this.telemetryDot.style.boxShadow = `0 0 8px ${meta.color}`;
+        }
+        if (this.telemetryBadge) {
+            this.telemetryBadge.textContent = meta.badge;
+        }
+    }
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -905,6 +1062,9 @@ document.addEventListener('DOMContentLoaded', () => {
     new ScrollProgressIndicator();
     new HeroLifecycleController(lattice, regLab);
     
+    // Initialize Profile & Skills Matrix
+    new SkillsMatrixController();
+
     // Initialize Projects & Architecture Systems
     new KineticStream(); // Executive Projects Grid
     new RomeClock(); // Rome timezone clock & date ticker

@@ -1,230 +1,155 @@
-/* === EXECUTIVE CASE STUDIES ENGINE === */
+/* === EXECUTIVE SYSTEMS ARCHITECTURE CONSOLE & RAG ORCHESTRATOR === */
 class KineticStream {
     constructor() {
-        this.container = document.getElementById('kinetic-stream-track');
+        this.rosterList = document.getElementById('systems-roster-list');
+        this.consoleWorkspace = document.getElementById('console-workspace');
         
-        // Executive Data Architecture
-        this.allProjects = [
-            {
-                "id": "p1",
-                "title": "Predictive Supply Chain & Demand Intelligence",
-                "category": "AI/ML",
-                "categoryLabel": "Predictive Systems",
-                "stack": ["Python", "XGBoost", "FastAPI", "Polars", "Docker"],
-                "kpi": "94%",
-                "kpiDesc": "Model Accuracy",
-                "desc": "High-throughput time-series forecasting engine designed for multi-node retail distribution networks, reducing inventory stockout by 18% across 1,200 nodes.",
-                "architecture": "Vectorized Polars ETL pipeline feeding ensemble XGBoost estimators, served asynchronously via production FastAPI endpoints with real-time SHAP feature attribution.",
-                "status": "Production Live"
-            },
-            {
-                "id": "p2",
-                "title": "Enterprise RAG & Knowledge Retrieval System",
-                "category": "LLM",
-                "categoryLabel": "Generative AI",
-                "stack": ["PyTorch", "LangChain", "Qdrant", "vLLM", "FlashAttention"],
-                "kpi": "<180ms",
-                "kpiDesc": "Latency p95",
-                "desc": "Enterprise-grade semantic retrieval system processing 50k+ technical documents with dense/sparse hybrid vector search and multi-stage cross-encoder reranking.",
-                "architecture": "Qdrant vector engine integrated with self-hosted vLLM serving quantized Llama-3 endpoints, featuring dense passage retrieval and automated context compression.",
-                "status": "Production Live"
-            },
-            {
-                "id": "p3",
-                "title": "Edge Computer Vision & Quality Assurance",
-                "category": "CV",
-                "categoryLabel": "Computer Vision",
-                "stack": ["PyTorch", "YOLOv11", "OpenCV", "TensorRT", "CUDA"],
-                "kpi": "99.2%",
-                "kpiDesc": "Defect Recall",
-                "desc": "Edge-computing diagnostic vision pipeline for real-time manufacturing defect inspection and automated multi-class categorization operating at 120 FPS.",
-                "architecture": "Custom YOLOv11 deep neural network compiled with TensorRT for edge NVIDIA Jetson nodes, delivering sub-10ms inference latency per high-resolution frame.",
-                "status": "Production Live"
-            },
-            {
-                "id": "p4",
-                "title": "Behavioral Analytics & Churn Prediction Engine",
-                "category": "AI/ML",
-                "categoryLabel": "Predictive Systems",
-                "stack": ["Scikit-Learn", "SHAP", "Optuna", "Evidently AI", "MLflow"],
-                "kpi": "-23%",
-                "kpiDesc": "Annual Churn Rate",
-                "desc": "Predictive customer lifetime value and attrition modeling platform utilizing high-dimensional feature engineering and automated model explainability.",
-                "architecture": "Gradient boosted classification pipeline tuned via Optuna hyperparameter optimization, featuring continuous data drift monitoring with Evidently AI and automated MLflow lineage tracking.",
-                "status": "Production Live"
-            },
-            {
-                "id": "p5",
-                "title": "Automated Market Making via Deep Reinforcement Learning",
-                "category": "RL",
-                "categoryLabel": "Quantitative AI",
-                "stack": ["Python", "NumPy", "RLlib", "PyTorch", "Arrow"],
-                "kpi": "+14.2%",
-                "kpiDesc": "Sharpe Ratio",
-                "desc": "Deep Reinforcement Learning agent engineered for continuous market making and dynamic liquidity allocation across high-frequency order books.",
-                "architecture": "Proximal Policy Optimization (PPO) agent trained on microsecond limit order book snapshots, featuring custom reward function shaping for inventory risk management.",
-                "status": "R&D System"
-            }
-        ];
+        // Blueprint Elements
+        this.bpSerial = document.getElementById('bp-serial');
+        this.bpClient = document.getElementById('bp-client');
+        this.bpTitle = document.getElementById('bp-title');
+        this.bpDomain = document.getElementById('bp-domain');
+        this.bpKpiPrimary = document.getElementById('bp-kpi-primary');
+        this.bpKpiPrimaryLabel = document.getElementById('bp-kpi-primary-label');
+        this.bpKpiSecondary = document.getElementById('bp-kpi-secondary');
+        this.bpKpiSecondaryLabel = document.getElementById('bp-kpi-secondary-label');
+        this.bpStack = document.getElementById('bp-stack');
+        this.bpSummary = document.getElementById('bp-summary');
+        this.bpTopologyRail = document.getElementById('bp-topology-rail');
 
-        this.projects = [...this.allProjects];
+        // Master Projects from Knowledge Base
+        this.projects = typeof RAG_KNOWLEDGE_BASE !== 'undefined' ? RAG_KNOWLEDGE_BASE.projects : [];
+        this.activeId = "p1";
+        this.ragEngine = null;
+
         this.init();
     }
 
     init() {
-        if (!this.container) return;
-        this.renderGrid();
-        this.setupModal();
-        this.setupFilterHud();
+        if (!this.rosterList) return;
+
+        // Initialize RAG Engine
+        if (typeof ProjectRagEngine !== 'undefined') {
+            this.ragEngine = new ProjectRagEngine();
+        }
+
+        this.renderRoster();
+        this.selectSystem(this.activeId);
     }
 
-    setupFilterHud() {
-        const filterBtns = document.querySelectorAll('#stream-filter-hud .filter-btn');
-        if (!filterBtns.length) return;
-
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                const filter = btn.getAttribute('data-filter');
-                if (filter === 'all') {
-                    this.projects = [...this.allProjects];
-                } else {
-                    this.projects = this.allProjects.filter(p => p.category === filter);
-                }
-
-                this.container.style.opacity = '0';
-                this.container.style.transform = 'translateY(6px)';
-                setTimeout(() => {
-                    this.renderGrid();
-                    this.container.style.opacity = '1';
-                    this.container.style.transform = 'translateY(0)';
-                }, 160);
-            });
-        });
-    }
-
-    renderGrid() {
-        this.container.innerHTML = this.projects.map(p => {
-            const stackHtml = p.stack.map(s => `<span class="tech-pill">${s}</span>`).join('');
-            const isProd = p.status.includes('Production');
-            const statusClass = isProd ? 'status-live' : 'status-research';
-            
+    renderRoster() {
+        this.rosterList.innerHTML = this.projects.map((p, idx) => {
+            const isActive = p.id === this.activeId;
             return `
-                <article class="project-bento-card" id="slate-${p.id}" tabindex="0" aria-label="View case study for ${p.title}">
-                    <div class="card-top-meta">
-                        <span class="category-badge">${p.categoryLabel || p.category}</span>
-                        <span class="status-badge ${statusClass}">
-                            <span class="status-dot"></span>
-                            ${p.status}
-                        </span>
+                <button type="button" 
+                        class="roster-item ${isActive ? 'active' : ''}" 
+                        data-id="${p.id}" 
+                        role="tab" 
+                        aria-selected="${isActive ? 'true' : 'false'}"
+                        id="roster-tab-${p.id}"
+                        aria-controls="console-workspace">
+                    <div class="roster-item-top">
+                        <span class="roster-serial">${p.serial}</span>
+                        <span class="roster-tag" data-domain="${p.domainTag}">${p.domainTag.toUpperCase()}</span>
                     </div>
-                    
-                    <div class="card-main">
-                        <h3 class="card-title">${p.title}</h3>
-                        <p class="card-desc">${p.desc}</p>
+                    <div class="roster-item-main">
+                        <h4 class="roster-title">${p.title}</h4>
+                        <span class="roster-client">${p.clientContext}</span>
                     </div>
-                    
-                    <div class="card-footer">
-                        <div class="card-kpi">
-                            <span class="kpi-metric">${p.kpi}</span>
-                            <span class="kpi-subtext">${p.kpiDesc || 'Key Metric'}</span>
-                        </div>
-                        <div class="card-action">
-                            <span class="action-text">Case Study</span>
-                            <i class="fa-solid fa-arrow-up-right-from-square action-icon"></i>
-                        </div>
-                    </div>
-
-                    <div class="card-stack-row">
-                        ${stackHtml}
-                    </div>
-                </article>
+                    <div class="roster-notch" aria-hidden="true"></div>
+                </button>
             `;
         }).join('');
-        
-        // Attach event listeners to open modal
-        this.container.querySelectorAll('.project-bento-card').forEach(card => {
-            const pid = card.id.replace('slate-', '');
-            card.addEventListener('click', () => this.openModal(pid));
-            card.addEventListener('keydown', (e) => {
+
+        this.rosterList.querySelectorAll('.roster-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const pid = btn.getAttribute('data-id');
+                this.selectSystem(pid);
+            });
+            btn.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    this.openModal(pid);
+                    const pid = btn.getAttribute('data-id');
+                    this.selectSystem(pid);
                 }
             });
         });
     }
 
-    setupModal() {
-        this.modal = document.getElementById('project-modal');
-        if (!this.modal) return;
-        
-        this.modalClose = document.getElementById('modal-close');
-        this.modalBackdrop = document.getElementById('modal-backdrop');
-        
-        const close = () => this.closeModal();
-        if (this.modalClose) this.modalClose.addEventListener('click', close);
-        if (this.modalBackdrop) this.modalBackdrop.addEventListener('click', close);
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.modal.classList.contains('active')) {
-                close();
-            }
+    selectSystem(projectId) {
+        const project = this.projects.find(p => p.id === projectId);
+        if (!project) return;
+        this.activeId = projectId;
+
+        // Update Roster UI State
+        this.rosterList.querySelectorAll('.roster-item').forEach(btn => {
+            const isMatch = btn.getAttribute('data-id') === projectId;
+            btn.classList.toggle('active', isMatch);
+            btn.setAttribute('aria-selected', isMatch ? 'true' : 'false');
         });
+
+        // Update Blueprint View with smooth crossfade
+        const blueprintZone = document.getElementById('blueprint-zone');
+        if (blueprintZone) {
+            blueprintZone.style.opacity = '0.4';
+            blueprintZone.style.transform = 'translateY(4px)';
+            
+            setTimeout(() => {
+                this.applyBlueprintData(project);
+                blueprintZone.style.transition = 'opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1)';
+                blueprintZone.style.opacity = '1';
+                blueprintZone.style.transform = 'translateY(0)';
+            }, 80);
+        } else {
+            this.applyBlueprintData(project);
+        }
+
+        // Notify RAG Copilot Engine
+        if (this.ragEngine) {
+            this.ragEngine.setActiveProject(projectId);
+        }
     }
 
-    openModal(pid) {
-        const project = this.allProjects.find(p => p.id === pid);
-        if (!project || !this.modal) return;
+    applyBlueprintData(project) {
+        if (this.bpSerial) this.bpSerial.textContent = project.serial;
+        if (this.bpClient) this.bpClient.textContent = project.clientContext;
+        if (this.bpTitle) this.bpTitle.textContent = project.title;
+        if (this.bpDomain) this.bpDomain.textContent = project.domain;
+        if (this.bpKpiPrimary) this.bpKpiPrimary.textContent = project.kpiPrimary;
+        if (this.bpKpiPrimaryLabel) this.bpKpiPrimaryLabel.textContent = project.kpiPrimaryLabel;
+        if (this.bpKpiSecondary) this.bpKpiSecondary.textContent = project.kpiSecondary;
+        if (this.bpKpiSecondaryLabel) this.bpKpiSecondaryLabel.textContent = project.kpiSecondaryLabel;
+        if (this.bpSummary) this.bpSummary.textContent = project.summary;
 
-        const titleEl = document.getElementById('modal-title');
-        const statusTextEl = document.getElementById('modal-status-text');
-        const descEl = document.getElementById('modal-desc');
-        const tagsContainer = document.getElementById('modal-tags');
-        const kpisContainer = document.getElementById('modal-kpis');
-        const modalIcon = document.getElementById('modal-icon');
-
-        if (titleEl) titleEl.textContent = project.title;
-        if (statusTextEl) statusTextEl.textContent = project.status;
-        if (descEl) descEl.textContent = project.architecture || project.desc;
-        
-        if (modalIcon) {
-            const iconMap = {
-                'AI/ML': 'fa-solid fa-diagram-project',
-                'LLM': 'fa-solid fa-microchip',
-                'CV': 'fa-solid fa-eye',
-                'RL': 'fa-solid fa-network-wired'
-            };
-            modalIcon.className = iconMap[project.category] || 'fa-solid fa-code';
+        // Render Stack Pills
+        if (this.bpStack) {
+            this.bpStack.innerHTML = project.stack.map(tech => `
+                <span class="bp-tech-pill">${tech}</span>
+            `).join('');
         }
 
-        if (tagsContainer) {
-            tagsContainer.innerHTML = project.stack.map(tag => `<span class="modal-tag">${tag}</span>`).join('');
+        // Render Interactive SVG Topology Rail
+        if (this.bpTopologyRail && project.topologySteps) {
+            this.bpTopologyRail.innerHTML = project.topologySteps.map((step, idx) => {
+                const isLast = idx === project.topologySteps.length - 1;
+                return `
+                    <div class="topo-node ${isLast ? 'terminal-node' : ''}">
+                        <div class="node-box">
+                            <span class="node-idx">0${idx + 1}</span>
+                            <span class="node-name">${step.name}</span>
+                            <span class="node-sub">${step.desc}</span>
+                        </div>
+                        ${!isLast ? `
+                            <div class="node-connector" aria-hidden="true">
+                                <svg class="connector-svg" width="32" height="12" viewBox="0 0 32 12" fill="none">
+                                    <line x1="0" y1="6" x2="26" y2="6" stroke="var(--c-border)" stroke-width="2" stroke-dasharray="3 3"/>
+                                    <path d="M24 2L30 6L24 10" fill="var(--c-accent)"/>
+                                </svg>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
         }
-        
-        if (kpisContainer) {
-            kpisContainer.innerHTML = `
-                <div class="modal-kpi-item">
-                    <span class="kpi-val">${project.kpi}</span>
-                    <span class="kpi-label">${project.kpiDesc || 'Key Metric'}</span>
-                </div>
-                <div class="modal-kpi-item">
-                    <span class="kpi-val">${project.categoryLabel || project.category}</span>
-                    <span class="kpi-label">Domain</span>
-                </div>
-            `;
-        }
-
-        this.modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-
-    closeModal() {
-        if (!this.modal) return;
-        this.modal.classList.remove('active');
-        document.body.style.overflow = '';
     }
 }
-
