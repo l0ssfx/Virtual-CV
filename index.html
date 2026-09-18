@@ -506,26 +506,9 @@
                     
                     <!-- Left Column: Systems Navigator Roster -->
                     <aside class="console-sidebar">
-                        <div class="sidebar-header">
-                            <span class="sidebar-status-dot active"></span>
-                            <span class="sidebar-title">SYSTEMS DIRECTORY</span>
-                            <span class="sidebar-count">4 ACTIVE</span>
-                        </div>
-                        
                         <nav class="systems-roster-list" id="systems-roster-list" role="tablist" aria-label="Production Systems List">
                             <!-- Injected dynamically via KineticStream -->
                         </nav>
-
-                        <div class="sidebar-footer-stats">
-                            <div class="stat-mini">
-                                <span class="stat-label">RUNTIME STATUS</span>
-                                <span class="stat-val live"><i class="fa-solid fa-circle"></i> Production Ready</span>
-                            </div>
-                            <div class="stat-mini">
-                                <span class="stat-label">COPILOT ENGINE</span>
-                                <span class="stat-val"><i class="fa-solid fa-microchip"></i> Client-Side RAG (0ms)</span>
-                            </div>
-                        </div>
                     </aside>
 
                     <!-- Right Column: Active Blueprint Workspace & Terminal Copilot -->
@@ -585,23 +568,29 @@
                         <!-- Bottom Zone: Embedded Project Copilot & RAG Terminal -->
                         <div class="copilot-terminal-zone" id="copilot-terminal-zone">
                             <div class="terminal-chrome">
-                                <div class="terminal-dots">
-                                    <span class="t-dot red"></span>
-                                    <span class="t-dot yellow"></span>
-                                    <span class="t-dot green"></span>
+                                <div class="terminal-window-controls" aria-hidden="true">
+                                    <span class="term-dot close"></span>
+                                    <span class="term-dot minimize"></span>
+                                    <span class="term-dot expand"></span>
                                 </div>
                                 <div class="terminal-title">
-                                    <i class="fa-solid fa-terminal"></i> ARCHITECTURE COPILOT // CLIENT-SIDE RAG [ZERO-LATENCY ENGINE]
-                                </div>
-                                <div class="terminal-badge">
-                                    100% DETERMINISTIC
+                                    <span class="term-title-mono"><i class="fa-solid fa-terminal" aria-hidden="true"></i> Interactive Terminal</span>
                                 </div>
                             </div>
 
-                            <!-- Quick Query Chips Bar (1-Click Recruiter Triggers) -->
+                            <!-- Quick Query & Conversion Action Chips Bar -->
                             <div class="copilot-chips-rail">
-                                <span class="chips-label"><i class="fa-solid fa-bolt"></i> QUICK QUERIES:</span>
-                                <div class="copilot-quick-chips" id="copilot-quick-chips">
+                                <div class="copilot-action-triggers">
+                                    <button type="button" class="copilot-action-pill" id="trigger-book-call" title="Schedule 1-on-1 technical discussion with Renaldo directly in chat">
+                                        <i class="fa-solid fa-calendar-check" aria-hidden="true"></i> <span>Book Call</span>
+                                    </button>
+                                    <button type="button" class="copilot-action-pill" id="trigger-send-email" title="Send direct message/email to Renaldo directly in chat">
+                                        <i class="fa-solid fa-envelope" aria-hidden="true"></i> <span>Send Email</span>
+                                    </button>
+                                </div>
+                                <span class="chips-separator" aria-hidden="true">|</span>
+                                <span class="chips-label"><span class="chip-chevron">›</span> Domande rapide:</span>
+                                <div class="copilot-quick-chips" id="copilot-quick-chips" role="group" aria-label="Quick Queries">
                                     <!-- Chips injected dynamically per active project -->
                                 </div>
                             </div>
@@ -613,11 +602,11 @@
 
                             <!-- Interactive Natural Language Input Bar -->
                             <div class="terminal-input-bar">
-                                <span class="term-input-prompt">renaldo@hpc:~$</span>
-                                <input type="text" class="term-input-field" id="copilot-query-input" placeholder="Type custom question or click a chip above..." autocomplete="off" spellcheck="false" aria-label="Type question for RAG Copilot">
-                                <button type="button" class="term-send-btn" id="copilot-query-btn" aria-label="Submit Question">
-                                    <span>Query RAG</span>
-                                    <i class="fa-solid fa-arrow-turn-down"></i>
+                                <span class="term-input-prompt">› prompt:</span>
+                                <input type="text" class="term-input-field" id="copilot-query-input" placeholder="Chiedi su qualsiasi progetto, CV, percorso a Bologna, o prenota una call..." autocomplete="off" spellcheck="false" aria-label="Type question for Architecture Copilot">
+                                <button type="button" class="term-send-btn" id="copilot-query-btn" aria-label="Execute Question">
+                                    <span>Execute</span>
+                                    <i class="fa-solid fa-arrow-turn-down" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>

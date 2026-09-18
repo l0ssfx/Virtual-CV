@@ -2,14 +2,13 @@ const fs = require('fs');
 const path = require('path');
 
 const dest = 'dist';
-const dirs = ['css', 'js', 'assets', 'data'];
-const files = ['index.html'];
+const dirs = ['css', 'js', 'assets', 'data', 'api'];
+const files = ['index.html', 'vercel.json'];
 
-// Clean dist
-if (fs.existsSync(dest)) {
-    fs.rmSync(dest, { recursive: true, force: true });
+// Ensure dist exists
+if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
 }
-fs.mkdirSync(dest);
 
 // Copy Directories
 dirs.forEach(dir => {

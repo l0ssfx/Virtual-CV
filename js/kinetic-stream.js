@@ -112,7 +112,13 @@ class KineticStream {
 
     applyBlueprintData(project) {
         if (this.bpSerial) this.bpSerial.textContent = project.serial;
-        if (this.bpClient) this.bpClient.textContent = project.clientContext;
+        if (this.bpClient) {
+            if (project.githubUrl) {
+                this.bpClient.innerHTML = `${project.clientContext} · <a href="${project.githubUrl}" target="_blank" rel="noopener noreferrer" class="bp-repo-link" style="color:var(--c-accent); text-decoration:underline; font-weight:600;"><i class="fa-brands fa-github" aria-hidden="true"></i> GitHub Repo</a>`;
+            } else {
+                this.bpClient.textContent = project.clientContext;
+            }
+        }
         if (this.bpTitle) this.bpTitle.textContent = project.title;
         if (this.bpDomain) this.bpDomain.textContent = project.domain;
         if (this.bpKpiPrimary) this.bpKpiPrimary.textContent = project.kpiPrimary;
